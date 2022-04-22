@@ -1,0 +1,16 @@
+[Interface]
+Address = 10.10.10.1
+privateKey = yNLILKKmmh+sUJqQ8TGW6PgrcXPv1CA28ycdiVgmQ28=
+ListenPort = 52725
+
+[peer]
+publicKey = X09kkcNw8bgqIebVU/E0TfiXzNjyuMvAYUY+yup4uxY=
+AllowedIPs = 10.10.10.100
+
+[peer]
+publicKey = f8Vd5hRGIk8t8CIyMVHlLXzI9pZ8nKhfQx5wgvnAin4=
+AllowedIPs = 10.10.10.3, 192.168.81.0/24
+
+[peer]
+PublicKey = yX0HHmzyVa/NYLv8SIxuC4BjsbgwQgAClSepNzGn8EI=
+AllowedIPs = 10.10.10.2, 192.168.80.0/24
