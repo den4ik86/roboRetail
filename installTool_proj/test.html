@@ -1,0 +1,21 @@
+<form id="Cf1">
+  <input type="number" step="0.05" name="cf1" value="">
+  <input type="number" step="0.05" name="cf2" value="">
+  <input type="submit">
+</form>
+
+<script>
+  Cf1.onsubmit = async (e) => {
+    e.preventDefault();
+
+    let response = await fetch('http://78.140.57.122:61224/cf1', {
+      method: 'POST',
+      body: new FormData(Cf1)
+    });
+
+//    let result = await response.json();
+
+//    alert(result.message);
+  };
+</script>
+

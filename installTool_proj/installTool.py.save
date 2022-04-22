@@ -1,0 +1,165 @@
+from sqlalchemy import create_engine, insert, select, update, delete
+from typing import Any, Dict
+from fastapi import FastAPI, Request, Form
+#from sensors import Sensors , Cf1
+from fastapi.responses import HTMLResponse
+import ujson
+import socket
+import sqlite3
+
+app = FastAPI()
+
+html ="""
+<form id="url">
+  <input type="number" step="0.05" name="url" value="">
+  <input type="submit">
+</form>
+
+<script>
+  url.onsubmit = async (e) => {
+    e.preventDefault();
+
+    let response = await fetch('http://78.140.57.122:61224/url', {
+      method: 'POST',
+      body: new FormData(url)
+    });
+
+//    let result = await response.json();
+
+//    alert(result.message);
+  };
+</script>
+"""
+
+@app.get('/')
+async def get():
+    return HTMLResponse(html)
+
+@app.get('/setup')
+def setupMCU(request: Request):
+    ip = request.client.host
+    print (ip)
+#    engine = create_engine('sqlite:///shelf.db')
+#    result = engine.execute("select * from shelf where ip like :ip", ip)
+#    row = result.fetchall()
+    defaultJsonMcu = {
+                      "id": 0,
+                      "number": 0,
+                      "cf1": 1.8,
+                      "cf2": 1.8,
+                      "cf3": 1.8,
+                      "cf4": 1.8,
+                      "url": "",
+                      }
+    return defaultJsonMcu
+
+@app.get('/service')
+def getShelfValue(request: Request, id: int, number: int, cf1: float, cf2: float, cf3: float, cf4: float, unit1: float, unit2: float, unit3: float, unit4: float, weigth: float, url: str):
+    jsonData = {
+                "id": id,
+                "number": number,
+                "cf1": cf1,
+                "cf2": cf2,
+                "cf3": cf3,
+                "cf4": cf4,
+                "unit1": unit1,
+                "unit2": unit2,
+                "unit3": unit3,
+                "unit4": unit4,
+                "weigth": weigth,
+                "url": url,
+                }
+    file = open("tmp.json", "w")
+    file.write(ujson.dumps(jsonData))
+    file.close()
+
+@app.get('/client')
+
+def getUserRequest():
+    response = ujson.load(open("tmp.json", "r"))
+    return response
+
+@app.get('/id')
+
+def setId(request: Request, id: int):
+    ip = request.client.host
+    json = ujson.load(open("tmp.json", "r"))
+    json['id'] = id
+    file = open("tmp.json", "w")
+    file.write(ujson.dumps(json))
+    file.close()
+    return json
+
+@app.post('/number')
+def setNum(request: Request, number: int):
+    json = ujson.load(open("tmp.json", "r"))
+    json['number'] = number
+    file = open("tmp.json", "w")
+    file.write(ujson.dumps(json))
+    file.close()
+    return json
+
+@app.post('/cf1')
+
+def setCf1(request: Request, cf1: float = Form(...)):
+    json = ujson.load(open("tmp.json", "r"))
+    json['cf1'] = cf1
+    file = open("tmp.json", "w")
+    file.write(ujson.dumps(json))
+    file.close()
+    print (cf1)
+    return json
+
+@app.post('/cf2')
+def setCf2(request: Request, cf2: float = Form(...)):
+    ip = request.client.host
+    json = ujson.load(open("tmp.json", "r"))
+    json['cf2'] = cf2
+    file = open("tmp.json", "w")
+    file.write(ujson.dumps(json))
+    file.close()
+    return json
+
+@app.post('/cf3')
+def setCf3(request: Request, cf3: float):
+    ip = request.client.host
+    json = ujson.load(open("tmp.json", "r"))
+    json['cf3'] = cf3
+    file = open("tmp.json", "w")
+    file.write(ujson.dumps(json))
+    file.close()
+    return json
+
+@app.post('/cf4')
+def setCf4(request: Request, cf4: float):
+    ip = request.client.host
+    json = ujson.load(open("tmp.json", "r"))
+    json['cf4'] = cf4
+    file = open("tmp.json", "w")
+    file.write(ujson.dumps(json))
+    file.close()
+    return json
+
+@app.post('/url')
+def setUrl(request: Request, url: str):
+    json = ujson.load(open("tmp.json", "r"))
+    json['url'] = url
+    file = open("tmp.json", "w")
+    file.write(ujson.dumps(json))
+    file.close()
+    id = json['id']
+    ip = request.client.host
+    number = json['number']
+    cf1 = json['cf1']
+    cf2 = json['cf2']
+    cf3 = json['cf3']
+    cf4 = json['cf4']
+    url = json['url']
+    data = [(id, number, cf1, cf2, cf3, cf4, ip, url)]
+    conn=sqlite3.connect("shelf.db")
+    print (data)
+    cursor =conn.cursor()
+    cursor.executemany("INSERT INTO shelf VALUES (?,?,?,?,?,?,?,?)", data)
+    conn.commit()
+    return json
+
